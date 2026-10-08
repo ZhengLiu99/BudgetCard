@@ -1,8 +1,9 @@
 import SwiftUI
 
-public struct BudgetCard: View {
+public struct BudgetCard<InfoDestination: View>: View {
     private let snapshot: BudgetSnapshot
     private let currencies: [BudgetCurrency]
+    private let infoDestination: () -> InfoDestination
     @Binding private var selection: BudgetCurrency
     @Environment(\.colorScheme) private var colorScheme
 
@@ -13,10 +14,12 @@ public struct BudgetCard: View {
     public init(
         snapshot: BudgetSnapshot,
         currencies: [BudgetCurrency],
-        selection: Binding<BudgetCurrency>
+        selection: Binding<BudgetCurrency>,
+        @ViewBuilder infoDestination: @escaping () -> InfoDestination
     ) {
         self.snapshot = snapshot
         self.currencies = currencies
+        self.infoDestination = infoDestination
         self._selection = selection
     }
 
@@ -44,9 +47,14 @@ public struct BudgetCard: View {
                         .foregroundStyle(style.secondaryLabel)
                         .tracking(-0.2)
 
-                    Image(systemName: "info.circle")
-                        .font(.system(size: style.s(7)))
-                        .foregroundStyle(style.infoIcon)
+                    NavigationLink {
+                        infoDestination()
+                    } label: {
+                        Image(systemName: "info.circle")
+                            .font(.system(size: style.s(7)))
+                            .foregroundStyle(style.infoIcon)
+                    }
+                    .buttonStyle(.plain)
                 }
 
                 Text(money(snapshot.budget))
@@ -169,14 +177,20 @@ private struct BudgetCardPreview: View {
     ]
 
     var body: some View {
-        ZStack {
-            (colorScheme == .dark ? Color.black : Color(red: 242 / 255, green: 242 / 255, blue: 244 / 255))
-                .ignoresSafeArea()
-            BudgetCard(
-                snapshot: .sample,
-                currencies: currencies,
-                selection: $currency
-            )
+        NavigationStack {
+            ZStack {
+                (colorScheme == .dark ? Color.black : Color(red: 242 / 255, green: 242 / 255, blue: 244 / 255))
+                    .ignoresSafeArea()
+                BudgetCard(
+                    snapshot: .sample,
+                    currencies: currencies,
+                    selection: $currency
+                ) {
+                    Text("说明")
+                        .navigationTitle("Annualized spend")
+                        .navigationBarTitleDisplayMode(.inline)
+                }
+            }
         }
     }
 }
