@@ -4,8 +4,11 @@ public struct BudgetCard: View {
     private let snapshot: BudgetSnapshot
     private let currencies: [BudgetCurrency]
     @Binding private var selection: BudgetCurrency
+    @Environment(\.colorScheme) private var colorScheme
 
-    private let style = BudgetCardStyle.figma
+    private var style: BudgetCardStyle {
+        BudgetCardStyle.style(for: colorScheme)
+    }
 
     public init(
         snapshot: BudgetSnapshot,
@@ -28,7 +31,6 @@ public struct BudgetCard: View {
                 .padding(.top, style.s(6))
         }
         .padding(style.s(10))
-        .fixedSize(horizontal: true, vertical: true)
         .background(style.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: style.s(11), style: .continuous))
     }
@@ -49,8 +51,10 @@ public struct BudgetCard: View {
 
                 Text(money(snapshot.budget))
                     .font(style.amountFont)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(style.primaryLabel)
                     .tracking(-0.2)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
                     .padding(.top, style.s(1))
             }
 
@@ -82,13 +86,13 @@ public struct BudgetCard: View {
                         .foregroundStyle(style.secondaryLabel)
                     Text(money(snapshot.spent))
                         .font(style.labelFont)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(style.primaryLabel)
                         .tracking(-0.2)
                 }
 
                 Text(snapshot.progressText)
                     .font(.system(size: style.s(4.2), weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(style.primaryLabel)
                     .tracking(-0.17)
                     .frame(width: style.s(15), height: style.s(8))
                     .background(style.badgeFill)
@@ -103,7 +107,7 @@ public struct BudgetCard: View {
                     .foregroundStyle(style.secondaryLabel)
                 Text(money(snapshot.remaining))
                     .font(style.labelFont)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(style.primaryLabel)
                     .tracking(-0.2)
             }
         }
@@ -118,7 +122,7 @@ public struct BudgetCard: View {
             HStack(spacing: style.s(2)) {
                 Text(selection.code)
                     .font(style.labelFontRegular)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(style.primaryLabel)
                     .lineLimit(1)
 
                 Image(systemName: "chevron.down")
@@ -142,11 +146,18 @@ public struct BudgetCard: View {
     }
 }
 
-#Preview("Interactive") {
+#Preview("Night") {
     BudgetCardPreview()
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Day") {
+    BudgetCardPreview()
+        .preferredColorScheme(.light)
 }
 
 private struct BudgetCardPreview: View {
+    @Environment(\.colorScheme) private var colorScheme
     @State private var currency = BudgetCurrency(code: "USD", symbol: "$")
 
     private let currencies = [
@@ -159,7 +170,8 @@ private struct BudgetCardPreview: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            (colorScheme == .dark ? Color.black : Color(red: 242 / 255, green: 242 / 255, blue: 244 / 255))
+                .ignoresSafeArea()
             BudgetCard(
                 snapshot: .sample,
                 currencies: currencies,

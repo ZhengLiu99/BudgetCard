@@ -5,7 +5,7 @@ public struct BudgetSnapshot: Sendable {
     public var spent: Double
     public var progress: CGFloat
 
-    public var remaining: Double { budget }
+    public var remaining: Double { budget - spent }
 
     public var progressText: String { "\(Int((progress * 100).rounded()))%" }
 
